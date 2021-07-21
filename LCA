@@ -1,0 +1,91 @@
+//#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+
+typedef long long ll;
+typedef long double ld;
+
+const ll INF = 1e6 + 3;
+
+using namespace std;
+
+vector<vector<ll>> gr;
+vector<pair<ll, ll>> vec;
+vector<ll> h;
+vector<ll> first;
+
+void DFS(ll u, ll p) {
+    if (p == -1) {
+        h[u] = 0;
+    } else {
+        h[u] = h[p] + 1;
+    }
+    vec.push_back({h[u], u});
+    if (first[u] == -1){
+        first[u] = vec.size() - 1;
+    }
+    for (auto v:gr[u]) {
+        if (v != p) {
+            h[v] = h[u] + 1;
+            DFS(v, u);
+            vec.push_back({h[u], u});
+            if (first[u] == -1){
+                first[u] = vec.size() - 1;
+            }
+        }
+    }
+
+}
+
+int main() {
+    ios_base::sync_with_stdio(0), cin.tie(0), cout.tie(0);
+    ll n, m;
+    cin >> n >> m;
+    gr.resize(n);
+    h.resize(n, 0);
+    first.resize(n,-1);
+    for (ll i = 0; i < n - 1; ++i) {
+        ll v;
+        cin >> v;
+        gr[i + 1].push_back(v);
+        gr[v].push_back(i + 1);
+    }
+    DFS(0, -1);
+    ll size = (ll) log2(vec.size()) + 1;
+    vector<vector<pair<ll, ll>>> st(size, vector<pair<ll, ll>>(vec.size()));
+    st[0] = vec;
+    for (ll i = 1; i < size; ++i) {
+        ll j = 0;
+        while (j + (1 << i) < vec.size()) {
+            st[i][j] = min(st[i - 1][j], st[i - 1][j + (1 << (i - 1))]);
+            j++;
+        }
+    }
+    ll a1, a2, x, y, z;
+    cin >> a1 >> a2 >> x >> y >> z;
+    ll sum = 0;
+    pair<ll, ll> v;
+    ll l = first[a1];
+    ll r = first[a2];
+    if (l > r) {
+        swap(l, r);
+    }
+    ll temp = (ll) log2(r - l + 1);
+    v = min(st[temp][l], st[temp][r - (1 << temp) + 1]);
+    sum += v.second;
+    for (ll i = 2; i <= m; ++i) {
+        a1 = ((x * a1 + y * a2 + z) % n + n) % n;
+        a2 = ((x * a2 + y * a1 + z) % n + n) % n;
+        ll a = ((a1 + v.second) % n + n) % n;
+        ll l = first[a];
+        ll r = first[a2];
+        if (l > r) {
+            swap(l, r);
+        }
+        ll temp = (ll) log2(r - l + 1);
+        v = min(st[temp][l], st[temp][r - (1 << temp) + 1]);
+        sum += v.second;
+    }
+    cout << sum;
+    return 0;
+}
