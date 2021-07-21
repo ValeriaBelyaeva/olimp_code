@@ -1,0 +1,37 @@
+#include <bits/stdc++.h>
+using namespace std;
+#define MAX 1000010
+int color[MAX], res[MAX];
+set<int> s[MAX];
+vector<vector<int> > g;
+
+void dfs(int v)
+{
+  int i, to;
+  s[v].insert(color[v]);
+  for(i = 0; i < g[v].size(); i++)
+  {
+    to = g[v][i];
+    dfs(to);
+    if (s[v].size() < s[to].size()) s[v].swap(s[to]);
+    s[v].insert(s[to].begin(), s[to].end());
+    s[to].clear();
+  }
+  res[v] = s[v].size();
+}
+
+int main(){
+    int n, p, c;
+    scanf("%d",&n);
+    g.resize(n+1);
+    for(int i = 1; i <= n; i++) {
+      scanf("%d %d",&p,&c);
+      g[p].push_back(i);
+      color[i] = c;
+    }
+    dfs(0);
+    for(int i = 1; i <= n; i++)
+        printf("%d ",res[i]);
+    printf("\n");
+    return 0;
+}
